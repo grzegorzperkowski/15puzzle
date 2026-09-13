@@ -40,7 +40,7 @@
           <div class="instructions" id="instructions">
             <h2>Make room for order.</h2>
             <p>Arrange tiles from 1 to 15, with the empty space at the bottom right.</p>
-            <p>Tap a marked tile to slide it. Arrow keys move the empty space when the board is focused.</p>
+            <p>Tap a marked tile or press an Arrow key to slide the tile with the matching arrow. Keyboard play is ready as soon as the page loads.</p>
             <p class="legend"><span aria-hidden="true">↔</span> Marked tiles can move.</p>
           </div>
           <p id="status" class="status" aria-live="polite" aria-atomic="true"></p>
@@ -57,6 +57,13 @@
       <button value="cancel" autofocus>Keep playing</button><button value="reset" class="primary">Reset puzzle</button>
     </form>
   </dialog>
+  <dialog id="new-game-dialog" aria-labelledby="new-game-heading" aria-describedby="new-game-description">
+    <h2 id="new-game-heading">Replace this puzzle?</h2>
+    <p id="new-game-description">Starting a new game will replace your saved puzzle and clear its moves, time, and undo history.</p>
+    <form method="dialog" id="new-game-form" class="dialog-actions">
+      <button value="cancel" autofocus>Keep current game</button><button value="new" class="primary">Start new game</button>
+    </form>
+  </dialog>
   <dialog id="success-dialog" aria-labelledby="success-heading" aria-describedby="success-description">
     <p class="eyebrow">EVERYTHING IN ITS PLACE</p>
     <h2 id="success-heading">Nicely done.</h2>
@@ -65,5 +72,6 @@
       <button value="close" autofocus>View board</button><button value="undo">Undo last move</button><button value="new" class="primary">New game</button>
     </form>
   </dialog>
+  <script data-goatcounter="https://15puzzle.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </body>
 </html>
