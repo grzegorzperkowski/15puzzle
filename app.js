@@ -11,11 +11,12 @@
     board: byId("board"), moves: byId("moves"), time: byId("time"),
     badge: byId("game-state"), cover: byId("pause-cover"), status: byId("status"),
     newGame: byId("new-game"), reset: byId("reset"), undo: byId("undo"),
-    pause: byId("pause"), theme: byId("theme"), resetDialog: byId("reset-dialog"),
+    pause: byId("pause"), themeToggle: byId("theme-toggle"), resetDialog: byId("reset-dialog"),
     successDialog: byId("success-dialog"), successText: byId("success-description"),
     newGameDialog: byId("new-game-dialog")
   };
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
   const state = {
     board: [], initialBoard: [], history: [], moves: 0, hasMoved: false,
     paused: false, solved: false, animating: false, elapsedMs: 0,
@@ -323,7 +324,10 @@
   function applyTheme(theme) {
     state.theme = ["light", "dark", "system"].includes(theme) ? theme : "system";
     document.documentElement.dataset.theme = state.theme;
-    elements.theme.value = state.theme;
+    const resolvedTheme = state.theme === "system" ? (colorScheme.matches ? "dark" : "light") : state.theme;
+    const nextTheme = resolvedTheme === "dark" ? "light" : "dark";
+    elements.themeToggle.setAttribute("aria-checked", String(resolvedTheme === "dark"));
+    elements.themeToggle.title = `Switch to ${nextTheme} theme`;
   }
 
   function registerServiceWorker() {
@@ -404,9 +408,13 @@
     if (action === "new") requestNewGame();
     else void undoLastMove();
   });
-  elements.theme.addEventListener("change", () => {
-    applyTheme(elements.theme.value);
+  elements.themeToggle.addEventListener("click", () => {
+    const nextTheme = elements.themeToggle.getAttribute("aria-checked") === "true" ? "light" : "dark";
+    applyTheme(nextTheme);
     try { localStorage.setItem(THEME_KEY, state.theme); } catch { /* Storage can be blocked for local files. */ }
+  });
+  colorScheme.addEventListener("change", () => {
+    if (state.theme === "system") applyTheme("system");
   });
   // Finish a slide if geometry or motion preferences change during it.
   window.addEventListener("resize", () => state.animation?.finish());
