@@ -6,6 +6,7 @@
   const SHUFFLE_MOVES = 240;
   const THEME_KEY = "fifteen-puzzle-theme";
   const GAME_KEY = "fifteen-puzzle-game";
+  const RESULT_KEY = "playground.result.15puzzle.v1";
   const byId = (id) => document.getElementById(id);
   const elements = {
     board: byId("board"), moves: byId("moves"), time: byId("time"),
@@ -83,6 +84,23 @@
         paused: state.paused, elapsedMs: elapsedTime()
       }));
     } catch { /* Play remains available when browser storage is blocked or full. */ }
+  }
+
+  function saveCompletedResult() {
+    try {
+      const previous = JSON.parse(localStorage.getItem(RESULT_KEY));
+      const stats = previous?.version === 1 && previous.app === "15puzzle" && previous.stats && typeof previous.stats === "object"
+        ? previous.stats : {};
+      const elapsed = Math.max(0, Math.round(elapsedTime()));
+      const completedCount = (Number.isSafeInteger(stats.completedCount) ? stats.completedCount : 0) + 1;
+      const fastestTimeMs = Math.min(Number.isFinite(stats.fastestTimeMs) ? stats.fastestTimeMs : Infinity, elapsed);
+      const bestMoves = Math.min(Number.isSafeInteger(stats.bestMoves) ? stats.bestMoves : Infinity, state.moves);
+      localStorage.setItem(RESULT_KEY, JSON.stringify({
+        version: 1, app: "15puzzle", updatedAt: Date.now(),
+        summary: { primary: `Best: ${formatElapsedTime(fastestTimeMs)}`, secondary: `${bestMoves} moves · ${completedCount} completed` },
+        stats: { completedCount, fastestTimeMs, bestMoves, last: { elapsedMs: elapsed, moves: state.moves, completedAt: Date.now() } }
+      }));
+    } catch { /* Results are optional when storage is blocked or malformed. */ }
   }
 
   function isValidSavedBoard(board) {
@@ -242,6 +260,7 @@
     state.animating = false;
     renderBoard();
     if (state.solved) {
+      saveCompletedResult();
       const message = `Puzzle solved in ${state.moves} moves and ${formatElapsedTime(elapsedTime())}.`;
       elements.successText.textContent = message;
       updateStatusMessage(message);
@@ -330,37 +349,6 @@
     elements.themeToggle.title = `Switch to ${nextTheme} theme`;
   }
 
-  function registerServiceWorker() {
-    if (!("serviceWorker" in navigator)) return;
-
-    // A subsequent controller means a newly installed worker has taken over.
-    // Reload once so an open tab immediately runs the matching app shell. Game
-    // progress is already saved in localStorage after every completed move.
-    const wasAlreadyControlled = navigator.serviceWorker.controller !== null;
-    let hasReloadedForUpdate = false;
-
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (!wasAlreadyControlled || hasReloadedForUpdate) return;
-      hasReloadedForUpdate = true;
-      window.location.reload();
-    });
-
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./service-worker.js", {
-        scope: "./",
-        // Check the worker script itself against the server instead of an HTTP
-        // cache, so a deployed worker update is discovered promptly.
-        updateViaCache: "none",
-      }).then((registration) => {
-        // Browsers may throttle their automatic update checks. Request one on
-        // every app load; failures are harmless because the active app remains.
-        registration.update().catch(() => {});
-      }).catch(() => {
-        // The game continues normally when workers are unsupported or blocked.
-      });
-    }, { once: true });
-  }
-
   for (let value = 1; value <= 15; value += 1) {
     const tile = document.createElement("button");
     tile.type = "button";
@@ -428,5 +416,4 @@
   try { savedTheme = localStorage.getItem(THEME_KEY) || "system"; } catch { /* System remains the fallback. */ }
   applyTheme(savedTheme);
   if (!restoreGame()) startNewGame();
-  registerServiceWorker();
 })();

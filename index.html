@@ -4,9 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f2efe8">
+  <meta name="description" content="A calm, offline-ready version of the classic 15 Puzzle.">
   <title>15 Puzzle · A little order</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <link rel="stylesheet" href="styles.css">
   <script src="app.js" defer></script>
+  <script src="pwa-register.js" data-pwa-register defer></script>
 </head>
 <body>
   <div class="shell">
@@ -49,7 +55,7 @@
       </section>
       <noscript><p>Enable JavaScript to play. Everything runs locally in your browser.</p></noscript>
     </main>
-    <footer>One space. Fifteen possibilities. <span>Entirely offline.</span></footer>
+    <footer>One space. Fifteen possibilities. <span>Entirely offline.</span> · <a href="/mygame/">Playground</a></footer>
   </div>
   <dialog id="reset-dialog" aria-labelledby="reset-heading" aria-describedby="reset-description">
     <h2 id="reset-heading">Start this puzzle again?</h2>
