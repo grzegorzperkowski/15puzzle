@@ -2,7 +2,8 @@
   "use strict";
   if (!("serviceWorker" in navigator) || !window.isSecureContext) return;
   const root = new URL(".", document.currentScript.src);
-  let reloadForUpdate = false;
+  let reloadForUpdate = false; let reloading = false; let controllerTried = false; let reloadTimer = 0;
+  function reloadOnce() { if (!reloadForUpdate || reloading) return; reloading = true; window.clearTimeout(reloadTimer); window.location.reload(); }
   function showUpdate(registration) {
     if (!registration.waiting || document.querySelector("[data-pwa-update]")) return;
     const notice = document.createElement("aside");
@@ -12,10 +13,10 @@
     const text = document.createElement("span"); text.textContent = "Update available";
     const button = document.createElement("button"); button.type = "button"; button.textContent = "Reload";
     button.style.cssText = "border:0;border-radius:.5rem;padding:.55rem .75rem;font:inherit;cursor:pointer";
-    button.addEventListener("click", () => { reloadForUpdate = true; registration.waiting?.postMessage({ type: "SKIP_WAITING" }); button.disabled = true; });
+    button.addEventListener("click", () => { if (reloadForUpdate) return; reloadForUpdate = true; registration.waiting?.postMessage({ type: "SKIP_WAITING" }); button.disabled = true; window.clearTimeout(reloadTimer); reloadTimer = window.setTimeout(reloadOnce, 1000); });
     notice.append(text, button); document.body.append(notice);
   }
-  navigator.serviceWorker.addEventListener("controllerchange", () => { if (reloadForUpdate) window.location.reload(); });
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (!reloadForUpdate || reloading || controllerTried) return; controllerTried = true; window.addEventListener("pagehide", () => { reloading = true; window.clearTimeout(reloadTimer); }, { once: true }); window.location.reload(); });
   window.addEventListener("load", async () => {
     try {
       const registration = await navigator.serviceWorker.register(new URL("service-worker.js", root), { scope: root.pathname, updateViaCache: "none" });

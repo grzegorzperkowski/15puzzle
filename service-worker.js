@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "fifteen-puzzle-shell-";
-const CACHE_NAME = `${CACHE_PREFIX}v1`;
+const CACHE_NAME = `${CACHE_PREFIX}v2`;
 const NETWORK_TIMEOUT_MS = 1800;
 const ROOT = new URL("./", self.registration.scope);
 const INDEX_URL = new URL("index.html", ROOT).href;
